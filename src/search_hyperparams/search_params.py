@@ -1,30 +1,35 @@
 import optuna
+from optuna.trial import Trial
 import datetime
 import sys
 import os
 # set path of this project to sys.path
 sys.path.append(os.path.join(os.getcwd(), ".."))
-from Baseline.baseline import BaseAlpha, StockDataset, lowpass_filter
+from ..dataset.stock import StockDataset
 from ta.volume import MFIIndicator
 import pandas as pd
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional
+from ..base.alpha import BaseAlpha
+from ..utils.F4 import BacktestInformation
 
 
 class AlphaParamsSearcher:
     def __init__(self,
-                 stock_csv_path,
-                 exp_path,
-                 Alpha,
+                 stock_csv_path: str,
+                 exp_path: str,
+                 alpha: BaseAlpha,
                  params: Dict[str, Any],
-                 target,
-                 directions: List[str] = ["maximize"]
+                 target_func: Callable[[BacktestInformation], float],
+                 directions: Optional[List[str]] = None,
+                 direction: Optional[str] = None
                 ):
         self.stock_csv_path = stock_csv_path
         self.exp_path = exp_path
-        self.Alpha = Alpha
+        self.alpha = alpha
         self.params = params
-        self.target = target
+        self.target_func = target_func
         self.directions = directions
+        self.direction = direction
         # Create dataset and split to train and test sets
         self.dataset = StockDataset(
             stock_csv_path=self.stock_csv_path,
@@ -33,9 +38,8 @@ class AlphaParamsSearcher:
         )
         self.train_set, self.test_set = self.dataset.get_data()
         self.expiration_date = self.dataset.get_expiration_date()
-
-    def objective(self, trial):
-        # Define the parameter search space
+        
+    def _convert_params_to_trial(self, trial: Trial) -> Dict[str, Any]:
         params = dict()
         for key, value in self.params.items():
             if isinstance(value, list):
@@ -45,11 +49,16 @@ class AlphaParamsSearcher:
                     params[key] = trial.suggest_float(key, value[0], value[1])
             else:
                 params[key] = value
+        return params
+
+    def objective(self, trial):
+        # Define the parameter search space
+        params = self._convert_params_to_trial(trial)
 
         print("==== Checking: ====", params)
         # Create model instance with trial parameters
         # Searching for the best parameters
-        model = self.Alpha(
+        model: BaseAlpha = self.alpha(
             stock_data=self.train_set,
             expiration_date=self.expiration_date,
             **params
@@ -57,18 +66,26 @@ class AlphaParamsSearcher:
 
         print(f"Testing model with parameters on train set...")
         # Run backtest
+        
         backtest_info = model.backtest(plot=True)
         
-        objective_value = self.target(backtest_info)
+        objective_value = self.target_func(backtest_info)
         
         print("Testing model with parameters on test set...")
         
         return objective_value
 
     def optimize_parameters(self, n_trials=100):
-        study = optuna.create_study(directions=self.directions)
+        if self.direction and self.directions:
+            raise ValueError("Please provide either a direction or directions for the study")
+        elif self.direction:
+            study = optuna.create_study(direction=self.direction)
+        elif self.directions:
+            study = optuna.create_study(directions=self.directions)
+        else:
+            raise ValueError("Please provide a direction or directions for the study")
+        
         study.optimize(self.objective, n_trials=n_trials)
-
         print("Best parameters:", study.best_params)
         print("Best value:", study.best_value)
 

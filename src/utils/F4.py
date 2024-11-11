@@ -1,5 +1,6 @@
 import sys
 import subprocess
+from typing import Tuple, Dict
 # output = subprocess.check_output(['hostname', '-I'])
 # # sys.path.append('/home/fin/phu_tv/nas/SSI/ssi_fc_data')
 # sys.path.append('/home/fin/temp/nas/Data/SSI/ssi_fc_data')
@@ -729,7 +730,7 @@ class BacktestInformation:
         ''' Tính Profit trung bình theo năm '''
         return self.Profit_after_fee()/(len(self.PNL()[0].resample("1D").last()) / 365)
 
-    def Plot_PNL(self, window_MA=None, plot=True):
+    def Plot_PNL(self, window_MA=None, plot=True) -> pd.DataFrame | Tuple[pd.DataFrame, Dict[str, float]]:
         ''' Print thông tin và Vẽ biểu đồ PNL của chiến thuật 
             Input: after_fee: bool, True: plot có trừ phí, False: plot không trừ phí'''
 

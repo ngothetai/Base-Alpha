@@ -4,3 +4,4 @@ tqdm
 itables
 scipy
 pydantic
+scikit-learn
