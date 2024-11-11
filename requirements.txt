@@ -1,0 +1,6 @@
+ta
+pandas
+tqdm
+itables
+scipy
+pydantic
