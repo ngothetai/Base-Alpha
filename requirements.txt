@@ -5,3 +5,5 @@ itables
 scipy
 pydantic
 scikit-learn
+optuna
+matplotlib

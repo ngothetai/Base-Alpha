@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "AlphaTools"
+version = "0.1.0"
+description = ""
+authors = ["taint thetai2382002@gmail.com"]
+packages = [{include = 'AlphaTools'}]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+setuptools = "^68.0.0"
+wheel = "^0.40.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "setuptools>=45", "wheel"]
+build-backend = "poetry.core.masonry.api"
