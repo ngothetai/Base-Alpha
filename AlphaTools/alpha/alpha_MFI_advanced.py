@@ -7,7 +7,7 @@ from ..utils.filters import lowpass_filter
 
 
 class EnhancedMFIAlpha(BaseAlpha):
-    def __init__(self, 
+    def __init__(self,
                  stock_data,
                  expiration_date,
                  mfi_period=14,
@@ -30,13 +30,13 @@ class EnhancedMFIAlpha(BaseAlpha):
         self.atr_period = atr_period
         self.atr_multiplier = atr_multiplier
 
-    def calculate_indicators(self, df):
+    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
         """Calculate indicators"""
         # 1. Moving Averages để xác định trend
         df['ma_short'] = df['Close'].rolling(self.ma_short).mean()
         df['ma_long'] = df['Close'].rolling(self.ma_long).mean()
         
-        # 2. MFI như cũ
+        # 2. MFI
         mfi = MFIIndicator(
             high=df['High'],
             low=df['Low'],
@@ -113,7 +113,7 @@ class EnhancedMFIAlpha(BaseAlpha):
                 not negative_momentum):        # Mất momentum
                 return 0  # Exit short
         
-        return position  # Giữ nguyên position hiện tại
+        return position
 
     def check_stop_loss(self, df, i, position):
         """Check dynamic stop loss"""
