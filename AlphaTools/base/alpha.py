@@ -17,12 +17,12 @@ class BaseAlpha(ABC):
         self._kwargs = kwargs
 
     @abstractmethod
-    def calculate_indicators(self, df):
+    def calculate_indicators(self, df) -> pd.DataFrame:
         """Calculate technical indicators needed for the strategy"""
         pass
 
     @abstractmethod
-    def generate_signals(self, df, i, current_position):
+    def generate_signals(self, df, i, current_position) -> int:
         """Generate trading signals based on indicators"""
         pass
 
@@ -66,6 +66,6 @@ class BaseAlpha(ABC):
         backtestInfo = BacktestInformation(df['Date'], df['position'], df['Close'], fee=0.3)
         
         if plot:
-            res = backtestInfo.Plot_PNL()
+            res: Tuple[pd.DataFrame, Dict[str, float]] = backtestInfo.Plot_PNL(plot=True)
             return backtestInfo, res
         return backtestInfo

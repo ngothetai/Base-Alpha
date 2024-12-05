@@ -67,7 +67,7 @@ class EnhancedMFIAlpha(BaseAlpha):
         
         return df
 
-    def generate_signals(self, df, i, position):
+    def generate_signals(self, df, i, current_position) -> int:
         """Generate enhanced trading signals"""
         # Kiểm tra trend
         uptrend = df['ma_short'].iloc[i] > df['ma_long'].iloc[i]
@@ -81,13 +81,13 @@ class EnhancedMFIAlpha(BaseAlpha):
         negative_momentum = df['roc'].iloc[i] < 0
         
         # Dynamic stop loss
-        if position != 0:
-            stop_loss = self.check_stop_loss(df, i, position)
+        if current_position != 0:
+            stop_loss = self.check_stop_loss(df, i, current_position)
             if stop_loss:
                 return 0
 
         # Signal generation
-        if position == 0:  # Không có position
+        if current_position == 0:  # Không có position
             if (df['mfi'].iloc[i] < self.mfi_lower and  # MFI thấp
                 uptrend and                             # Trong uptrend
                 positive_momentum and                   # Momentum tốt
@@ -101,19 +101,19 @@ class EnhancedMFIAlpha(BaseAlpha):
                 return -1  # Short signal
                 
         # Exit conditions
-        elif position == 1:  # Đang long
+        elif current_position == 1:  # Đang long
             if (df['mfi'].iloc[i] > 70 or      # MFI quá cao
                 not uptrend or                  # Mất uptrend
                 not positive_momentum):         # Mất momentum
                 return 0  # Exit long
                 
-        elif position == -1:  # Đang short
+        elif current_position == -1:  # Đang short
             if (df['mfi'].iloc[i] < 30 or      # MFI quá thấp
                 not downtrend or               # Mất downtrend
                 not negative_momentum):        # Mất momentum
                 return 0  # Exit short
         
-        return position
+        return current_position
 
     def check_stop_loss(self, df, i, position):
         """Check dynamic stop loss"""

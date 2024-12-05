@@ -752,12 +752,12 @@ class BacktestInformation:
             previous_day.loc[previous_day.index[0], 'total_gain'] = 0
             total_gain = pd.concat([previous_day, total_gain]).set_index('Datetime')
 
+        margin = Margin(self.df_brief)[1]
+        mdd = maximum_drawdown_future(self.df_brief.gain, cash_max)
+        
         if plot:
-            margin = Margin(self.df_brief)[1]
             print('Margin:', margin)
-            mdd = maximum_drawdown_future(self.df_brief.gain, cash_max)
             print(f'MDD: {mdd[0]} ({mdd[1]}%)\n')
-
             data = [('Total trading quantity', round(self.Number_of_trade(), 2)),
                     ('Profit per trade',round(self.Profit_per_trade(), 2)),
                     ('Total Profit', round(np.round(total_gain.total_gain.iloc[-1]*10)/10, 2)),
@@ -793,11 +793,3 @@ class BacktestInformation:
             plt.show()
             return total_gain, {'Margin': margin, 'MDD': mdd[0], 'MDD%': mdd[1]}
         return total_gain
-        # total_gain.reset_index(inplace=True)
-        # self.df.reset_index(inplace=True)
-        # total_gain['Position'] = self.df['Position']
-        # total_gain['Close'] = self.df['Close']
-        # total_gain['Return'] = 1 + pnl
-        # total_gain.reset_index(inplace=True)
-
-        # return total_gain.set_index('Datetime')
